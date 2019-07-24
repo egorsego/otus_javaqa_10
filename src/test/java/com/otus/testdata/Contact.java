@@ -24,7 +24,7 @@ public class Contact {
             return false;
 
         Contact contact = (Contact) obj;
-        return (contact.contactType == this.contactType && contact.contactValue == this.contactValue);
+        return contact.contactType.equals(this.contactType) && contact.contactValue.equals(this.contactValue);
     }
 
     @Override

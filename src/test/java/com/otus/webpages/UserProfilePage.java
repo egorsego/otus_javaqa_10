@@ -1,6 +1,7 @@
 package com.otus.webpages;
 
 import com.otus.testdata.Contact;
+import com.otus.testdata.UserAccount;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
@@ -18,7 +19,6 @@ public class UserProfilePage extends BasePage {
     }
 
     private static final Logger LOGGER = LogManager.getLogger(UserProfilePage.class);
-
     private By firstName = By.cssSelector("input#id_fname");
     private By firstNameLatin = By.cssSelector("input#id_fname_latin");
     private By lastName = By.cssSelector("input#id_lname");
@@ -31,7 +31,7 @@ public class UserProfilePage extends BasePage {
     private By cities = By.cssSelector("div.lk-cv-block__select-scroll_city button");
     private By readyForRelocationOptions = By.cssSelector("label.radio");
     private By schedule = By.xpath("//p[text()='Формат работы']/../following-sibling::div//label");
-    private By emptyContactDropdown = By.xpath("//span[text()='Способ связи']/..");
+    private By emptyContactDropdown = By.xpath(".//span[text()='Способ связи']/..");
     private By contacts = By.xpath("//span[text()='Способ связи' and @class='placeholder']/ancestor::div[@data-num and not(contains(@class,'hide'))]");
     private By deleteContact = By.xpath("//div[not(contains(@class, 'hide'))]/div[contains(@class, 'container__col_md-') and not(contains(@class, 'container__col_ssm-'))]/div/button[text()='Удалить']");
     private By addNewContactButton = By.xpath("//button[text()='Добавить']");
@@ -189,20 +189,33 @@ public class UserProfilePage extends BasePage {
     }
 
     public UserProfilePage deleteAllContactFields(){
-        while (driver.findElements(deleteContact).size() > 0){
-            driver.findElements(deleteContact).get(0).click();
+        int numberOfContactRows = driver.findElements(deleteContact).size();
+        WebDriverWait wait = new WebDriverWait(driver, 10);
+
+        for(int i = 0; i < numberOfContactRows; i++){
+            WebElement firstContactRowDeleteButton = driver.findElements(deleteContact).get(0);
+            firstContactRowDeleteButton.click();
         }
         return this;
     }
 
     public UserProfilePage addContactField(){
+        WebDriverWait wait = new WebDriverWait(driver, 10);
+        WebElement addNewContact = driver.findElement(addNewContactButton);
+        wait.until(ExpectedConditions.visibilityOf(addNewContact));
+        wait.until(ExpectedConditions.elementToBeClickable(addNewContact));
         driver.findElement(addNewContactButton).click();
         return this;
     }
 
     public UserProfilePage setContact(String contactType, String contactValue){
-        WebElement firstEmptyField = driver.findElements(contacts).get(0);
-        setDropdownFieldValue(emptyContactDropdown, firstEmptyField, "title", contactType);
+        WebElement firstEmptyContactRow = driver.findElements(contacts).get(0);
+        WebElement contactTypeDropdown = firstEmptyContactRow.findElement(emptyContactDropdown);
+        WebDriverWait wait = new WebDriverWait(driver, 10);
+        wait.until(ExpectedConditions.visibilityOf(contactTypeDropdown));
+        wait.until(ExpectedConditions.elementToBeClickable(contactTypeDropdown));
+        contactTypeDropdown.click();
+        setDropdownFieldValue(firstEmptyContactRow, "title", contactType);
         driver.findElement(By.xpath(String.format("//div[text()='%s']/ancestor::div[2]/input", contactType))).sendKeys(contactValue);
         return this;
     }
@@ -250,6 +263,28 @@ public class UserProfilePage extends BasePage {
         return result;
     }
 
+    public UserProfilePage setUserData(UserAccount user){
+        deleteAllContactFields();
+        setFirstName(user.firstName);
+        setFirstNameLatin(user.firstNameLatin);
+        setLastName(user.lastName);
+        setLastNameLatin(user.lastNameLatin);
+        setBlogName(user.blogName);
+        setBirthDate(user.birthDate);
+        setCountry(user.country);
+        setCity(user.city);
+        setIsRelocationReady(user.isReadyForRelocation);
+        setWorkSchedule(user.workSchedule);
+        addContactField();
+        setContact(user.contactOne.contactType, user.contactOne.contactValue);
+        addContactField();
+        setContact(user.contactTwo.contactType, user.contactTwo.contactValue);
+        setGender(user.gender);
+        setCompany(user.company);
+        setPosition(user.position);
+        return this;
+    }
+
     public void saveChanges(){
         driver.findElement(saveChangesButton).click();
     }
@@ -277,9 +312,8 @@ public class UserProfilePage extends BasePage {
         }
     }
 
-    private void setDropdownFieldValue(By dropdownField, WebElement dropdownItemsContainer, String attribute, String value){
-        driver.findElements(dropdownField).get(0).click();
-        for (WebElement e: dropdownItemsContainer.findElements(By.cssSelector("div.lk-cv-block__select-scroll button"))){
+    private void setDropdownFieldValue(WebElement emptyContactRow, String attribute, String value) {
+        for (WebElement e: emptyContactRow.findElements(By.cssSelector("div.lk-cv-block__select-scroll button"))){
             if(e.getAttribute(attribute).equals(value)){
                 e.click();
                 break;

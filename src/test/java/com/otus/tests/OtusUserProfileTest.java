@@ -1,16 +1,12 @@
 package com.otus.tests;
 
 import com.otus.testdata.UserAccount;
+import com.otus.utils.Utilities;
 import com.otus.webpages.HomePage;
 import com.otus.webpages.UserProfilePage;
 import org.junit.*;
 import org.openqa.selenium.*;
-
-import java.util.ArrayList;
-import java.util.Collections;
-
 import static org.junit.Assert.*;
-
 
 public class OtusUserProfileTest extends BaseTest {
 
@@ -25,24 +21,7 @@ public class OtusUserProfileTest extends BaseTest {
         homePage.openLoginForm()
                 .loginWithValidCredentials(System.getProperty("username"), System.getProperty("password"))
                 .openUserProfile()
-                .setFirstName(user.firstName)
-                .setFirstNameLatin(user.firstNameLatin)
-                .setLastName(user.lastName)
-                .setLastNameLatin(user.lastNameLatin)
-                .setBlogName(user.blogName)
-                .setBirthDate(user.birthDate)
-                .setCountry(user.country)
-                .setCity(user.city)
-                .setIsRelocationReady(user.isReadyForRelocation)
-                .setWorkSchedule(user.workSchedule)
-                .setGender(user.gender)
-                .deleteAllContactFields()
-                .addContactField()
-                .setContact(user.contactOne.contactType, user.contactOne.contactValue)
-                .addContactField()
-                .setContact(user.contactTwo.contactType, user.contactTwo.contactValue)
-                .setCompany(user.company)
-                .setPosition(user.position)
+                .setUserData(user)
                 .saveChanges();
 
         assert driver.findElement(By.xpath("//div[contains(@class, 'hide-sm')]//span[@class='success']")).isDisplayed();
@@ -51,8 +30,8 @@ public class OtusUserProfileTest extends BaseTest {
 
         homePage.open();
         UserProfilePage userProfilePage = homePage.openLoginForm()
-                                                    .loginWithValidCredentials(System.getProperty("username"), System.getProperty("password"))
-                                                    .openUserProfile();
+                                            .loginWithValidCredentials(System.getProperty("username"), System.getProperty("password"))
+                                            .openUserProfile();
 
         assertEquals(user.firstName, userProfilePage.getFirstName());
         assertEquals(user.firstNameLatin, userProfilePage.getFirstNameLatin());
@@ -66,21 +45,8 @@ public class OtusUserProfileTest extends BaseTest {
         assertEquals(user.gender, userProfilePage.getGender());
         assertEquals(user.company, userProfilePage.getCompany());
         assertEquals(user.position, userProfilePage.getPosition());
-
-        ArrayList<String> arr1 = user.workSchedule;
-        Collections.sort(arr1);
-        ArrayList<String> arr2 = userProfilePage.getWorkSchedule();
-        Collections.sort(arr2);
-
-        assertTrue(arr1.equals(arr2));
-
-        //assertTrue(user.contactOne.equals(userProfilePage.getContact(1)));
-        //assertTrue(user.contactTwo.equals(userProfilePage.getContact(2)));
-        assertEquals(user.contactOne.contactType, userProfilePage.getContact(1).contactType);
-        assertEquals(user.contactOne.contactValue, userProfilePage.getContact(1).contactValue);
-        assertEquals(user.contactTwo.contactType, userProfilePage.getContact(2).contactType);
-        assertEquals(user.contactTwo.contactValue, userProfilePage.getContact(2).contactValue);
-
-        return;
+        assertTrue(Utilities.areEqualArrays(user.workSchedule, userProfilePage.getWorkSchedule()));
+        assertEquals(user.contactOne, userProfilePage.getContact(1));
+        assertEquals(user.contactTwo, userProfilePage.getContact(2));
     }
 }
