@@ -1,52 +1,64 @@
 package com.otus.tests;
 
+import com.otus.testdata.Contact;
 import com.otus.testdata.UserAccount;
-import com.otus.utils.Utilities;
+import com.otus.testdata.UserAccountBuilder;
 import com.otus.webpages.HomePage;
-import com.otus.webpages.UserProfilePage;
-import org.junit.*;
+
+import org.junit.Assert;
+import org.junit.Test;
 import org.openqa.selenium.*;
-import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class OtusUserProfileTest extends BaseTest {
 
     @Test
     public void savePersonalInfoTest() {
-        UserAccount user = new UserAccount();
-        user.init();
+        UserAccountBuilder userAccountBuilder = new UserAccountBuilder();
+        UserAccount originalUser = userAccountBuilder.withFirstName("Эммет")
+                                            .withFirstNameLatin("Emmet")
+                                            .withLastName("Браун")
+                                            .withLastNameLatin("Brown")
+                                            .withBlogName("Doc.")
+                                            .withBirthDate("20.10.1950")
+                                            .livingInCountry("Россия")
+                                            .livingInCity("Александров")
+                                            .isReadyForRelocation("Да")
+                                            .withWorkSchedule(new ArrayList<>(Arrays.asList("Полный день", "Удаленно", "Гибкий график")))
+                                            .withPrimaryContact(new Contact("VK", "VK Account"))
+                                            .withSecondaryContact(new Contact("WhatsApp", "9991001010"))
+                                            .withGender("Мужской")
+                                            .withCompany("Self Employed")
+                                            .withPosition("Mad scientist")
+                                            .build();
 
         HomePage homePage = new HomePage(driver);
-        homePage.open();
-
-        homePage.openLoginForm()
+        homePage.open()
+                .openLoginForm()
                 .loginWithValidCredentials(System.getProperty("username"), System.getProperty("password"))
                 .openUserProfile()
-                .setUserData(user)
+                .setUserData(originalUser)
                 .saveChanges();
 
-        assert driver.findElement(By.xpath("//div[contains(@class, 'hide-sm')]//span[@class='success']")).isDisplayed();
+        boolean isConfirmationMessageDisplayed;
+        try {
+            isConfirmationMessageDisplayed = driver.findElement(By.xpath("//div[contains(@class, 'hide-sm')]//span[@class='success']")).isDisplayed();
+        }catch (org.openqa.selenium.NoSuchElementException e){
+            isConfirmationMessageDisplayed = false;
+        }
+
+        Assert.assertTrue("Save confirmation message isn't displayed", isConfirmationMessageDisplayed);
 
         driver.manage().deleteAllCookies();
 
-        homePage.open();
-        UserProfilePage userProfilePage = homePage.openLoginForm()
-                                            .loginWithValidCredentials(System.getProperty("username"), System.getProperty("password"))
-                                            .openUserProfile();
+        UserAccount obtainedUser = homePage.open()
+                                .openLoginForm()
+                                .loginWithValidCredentials(System.getProperty("username"), System.getProperty("password"))
+                                .openUserProfile()
+                                .getUserAccount();
 
-        assertEquals(user.firstName, userProfilePage.getFirstName());
-        assertEquals(user.firstNameLatin, userProfilePage.getFirstNameLatin());
-        assertEquals(user.lastName, userProfilePage.getLastName());
-        assertEquals(user.lastNameLatin, userProfilePage.getLastNameLatin());
-        assertEquals(user.blogName, userProfilePage.getBlogName());
-        assertEquals(user.birthDate, userProfilePage.getBirthDate());
-        assertEquals(user.country, userProfilePage.getCountry());
-        assertEquals(user.city, userProfilePage.getCity());
-        assertEquals(user.isReadyForRelocation, userProfilePage.getIsRelocationReady());
-        assertEquals(user.gender, userProfilePage.getGender());
-        assertEquals(user.company, userProfilePage.getCompany());
-        assertEquals(user.position, userProfilePage.getPosition());
-        assertTrue(Utilities.areEqualArrays(user.workSchedule, userProfilePage.getWorkSchedule()));
-        assertEquals(user.contactOne, userProfilePage.getContact(1));
-        assertEquals(user.contactTwo, userProfilePage.getContact(2));
+        Assert.assertEquals(originalUser, obtainedUser);
     }
 }

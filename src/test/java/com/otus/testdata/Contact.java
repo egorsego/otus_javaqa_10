@@ -1,12 +1,20 @@
 package com.otus.testdata;
 
 public class Contact {
-    public String contactType;
-    public String contactValue;
+    protected String contactType;
+    protected String contactValue;
 
     public Contact(String contactType, String contactValue) {
         this.contactType = contactType;
         this.contactValue = contactValue;
+    }
+
+    public String getContactType() {
+        return contactType;
+    }
+
+    public String getContactValue() {
+        return contactValue;
     }
 
     @Override

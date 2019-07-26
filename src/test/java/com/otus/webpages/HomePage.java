@@ -14,8 +14,9 @@ public class HomePage extends BasePage {
         super(driver);
     }
 
-    public void open(){
+    public HomePage open(){
         driver.get(URL);
+        return this;
     }
 
     public LoginForm openLoginForm(){

@@ -2,6 +2,7 @@ package com.otus.webpages;
 
 import com.otus.testdata.Contact;
 import com.otus.testdata.UserAccount;
+import com.otus.testdata.UserAccountBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
@@ -12,6 +13,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class UserProfilePage extends BasePage {
     public UserProfilePage(WebDriver driver) {
@@ -264,24 +266,24 @@ public class UserProfilePage extends BasePage {
     }
 
     public UserProfilePage setUserData(UserAccount user){
+        setFirstName(user.getFirstName());
+        setFirstNameLatin(user.getFirstNameLatin());
+        setLastName(user.getLastName());
+        setLastNameLatin(user.getLastNameLatin());
+        setBlogName(user.getBlogName());
+        setBirthDate(user.getBirthDate());
+        setCountry(user.getCountry());
+        setCity(user.getCity());
+        setIsRelocationReady(user.getIsReadyForRelocation());
+        setWorkSchedule(user.getWorkSchedule());
         deleteAllContactFields();
-        setFirstName(user.firstName);
-        setFirstNameLatin(user.firstNameLatin);
-        setLastName(user.lastName);
-        setLastNameLatin(user.lastNameLatin);
-        setBlogName(user.blogName);
-        setBirthDate(user.birthDate);
-        setCountry(user.country);
-        setCity(user.city);
-        setIsRelocationReady(user.isReadyForRelocation);
-        setWorkSchedule(user.workSchedule);
         addContactField();
-        setContact(user.contactOne.contactType, user.contactOne.contactValue);
+        setContact(user.getContactOne().getContactType(), user.getContactOne().getContactValue());
         addContactField();
-        setContact(user.contactTwo.contactType, user.contactTwo.contactValue);
-        setGender(user.gender);
-        setCompany(user.company);
-        setPosition(user.position);
+        setContact(user.getContactTwo().getContactType(), user.getContactTwo().getContactValue());
+        setGender(user.getGender());
+        setCompany(user.getCompany());
+        setPosition(user.getPosition());
         return this;
     }
 
@@ -319,5 +321,24 @@ public class UserProfilePage extends BasePage {
                 break;
             }
         }
+    }
+
+    public UserAccount getUserAccount() {
+        return new UserAccountBuilder().withFirstName(getFirstName())
+                .withFirstNameLatin(getFirstNameLatin())
+                .withLastName(getLastName())
+                .withLastNameLatin(getLastNameLatin())
+                .withBlogName(getBlogName())
+                .withBirthDate(getBirthDate())
+                .livingInCountry(getCountry())
+                .livingInCity(getCity())
+                .isReadyForRelocation(getIsRelocationReady())
+                .withWorkSchedule(getWorkSchedule())
+                .withPrimaryContact(getContact(1))
+                .withSecondaryContact(getContact(2))
+                .withGender(getGender())
+                .withCompany(getCompany())
+                .withPosition(getPosition())
+                .build();
     }
 }
